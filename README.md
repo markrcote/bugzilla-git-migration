@@ -1,11 +1,11 @@
 Git Migration Tools for Bugzilla
---------------------------------
+================================
 
 This repo contains tools for the Bugzilla [bzr-git migration][].
 
 
 FastImportRewriter.cs
-=====================
+---------------------
 
 This script is intended to be used during the initial export/import.
 
@@ -53,7 +53,7 @@ branch in the same destination repo.
 
 
 git-to-bzr.pl
-=============
+-------------
 
 This Perl script, based on the previous [bzr-to-cvs.pl][] script,
 keeps a bzr repo in sync with a git repo.  It's unidirectional, from
