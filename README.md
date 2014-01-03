@@ -76,6 +76,26 @@ in git.
 
 The -v option can be given to see some command output and other messages.
 
+Before this is first run, you must commit a .gitrev file to each
+destination bzr branch that contains the full ID of the last git
+commit of that branch.  The script uses this file to determine new
+commits, and it updates and commits it automatically.
+
+You can always test this yourself:
+
+* Create a local Bugzilla branch from upstream, e.g. `bzr branch
+  https://bzr.mozilla.org/bugzilla/4.2/`.
+* Create a local, empty git repo elsewhere via `git init`.
+* Perform a migration as described in the section above.
+* Edit git-to-bzr.pl to specify paths to your local bzr branch and git
+  repo.
+* Check in a .gitrev file to your local Bugzilla branch containing the
+  ID of the last git commit.
+* Make some commits to your git repo.
+* Run git-to-bzr.pl with the appropriate branch name(s).
+
+Each commit should be preserved individually.
+
 
 [bzr-git migration]: https://wiki.mozilla.org/Bugzilla:Migrating_to_git
 [a blog post]: http://www.fusonic.net/en/blog/2013/03/26/migrating-from-bazaar-to-git/
