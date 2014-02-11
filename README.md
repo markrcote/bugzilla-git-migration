@@ -3,6 +3,14 @@ Git Migration Tools for Bugzilla
 
 This repo contains tools for the Bugzilla [bzr-git migration][].
 
+These scripts require git, bzr, the bzr fast-export plugin, perl, and C#/mono.
+On Ubuntu, you can install these packages:
+
+* git
+* bzr
+* bzr-fastimport
+* perl
+* mono-mcs
 
 FastImportRewriter.cs
 ---------------------

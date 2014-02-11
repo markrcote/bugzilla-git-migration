@@ -81,7 +81,10 @@ namespace migrate
                         }
                         else if (s.StartsWith("R "))
                         {
-                            if (!IsDirectory(s.Substring(2, s.IndexOf(" ", 2) - 2)))
+                            // If directory, track the new name.
+                            if (IsDirectory(s.Substring(2, s.IndexOf(" ", 2) - 2)))
+                                dirs.Add(s.Substring(s.IndexOf(" ", 2) + 1));
+                            else
                                 commitPart.Renames.Add(s);
                         }
                         else if (s.StartsWith("D "))
