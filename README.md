@@ -12,6 +12,21 @@ On Ubuntu, you can install these packages:
 * perl
 * mono-mcs
 
+migrate.sh
+----------
+
+This bash script exports all relevant Bazaar repos at bzr.mozilla.org
+to git repos at git.mozilla.org using the other tools in this repo.
+Logically related branches, e.g. Bugzilla versions, are created as
+different git branches in the same git repo.  Other standalone branches
+are exported as just a master branch in a new repo.  Note that a few
+git repos will not have the standard master branch, since they have no
+associated bzr trunk branch.
+
+A few Bazaar branches are not migrated due to them being irrelevant or
+broken.
+
+
 FastImportRewriter.cs
 ---------------------
 
