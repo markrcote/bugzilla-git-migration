@@ -60,12 +60,19 @@ function migrate_branch
   cd git
   git checkout -f $DEST_BRANCH
 
+  find . -path ./.git -prune -o -type f -ls | sed 's/^[0-9]* *[0-9]* *//' | sort > ../git-ls.txt
   find . -path ./.git -prune -o -type f -print | sort | xargs md5sum > ../git-md5s.txt
   cd ../bzr
+  find . -path ./.bzr -prune -o -type f -ls | sed 's/^[0-9]* *[0-9]* *//' | grep -v ' ./.gitrev$' | sort > ../bzr-ls.txt
   find . -path ./.bzr -prune -o -type f -print | grep -v '^./.gitrev$' | sort | xargs md5sum > ../bzr-md5s.txt
+
   cd ..
-  echo "Diff:"
-  diff git-md5s.txt bzr-md5s.txt
+  echo "Diff of file metadata:"
+  diff bzr-ls.txt git-ls.txt
+  echo "Diff of md5 sums:"
+  diff bzr-md5s.txt git-md5s.txt
+  echo "End of diffs."
+
   cd git
   git fetch git.m.o
   git push git.m.o $DEST_BRANCH
