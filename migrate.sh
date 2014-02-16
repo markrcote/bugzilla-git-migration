@@ -8,7 +8,7 @@
 SRC_REPO_PREFIX="https://bzr.mozilla.org"
 DEST_REPO_PREFIX="ssh://gitolite3@git.mozilla.org"
 TOOLSDIR=`pwd`
-DEBUG=1
+DEBUG=0
 
 function migrate_branch
 {
@@ -135,51 +135,51 @@ echo "Starting migration."
 
 START=`date +%s`
 
-# echo "Migrating Bugzilla core."
+echo "Migrating Bugzilla core."
 
-# migrate_repo_branches "/bugzilla" "/bugzilla/bugzilla.git" "2.14 2.16 2.18 2.20 2.22 3.0 3.2 3.4 3.6 4.0 4.2 4.4 sightings trunk"
+migrate_repo_branches "/bugzilla" "/bugzilla/bugzilla.git" "2.14 2.16 2.18 2.20 2.22 3.0 3.2 3.4 3.6 4.0 4.2 4.4 sightings trunk"
 
-# echo "Migrating Bugzilla qa extension."
+echo "Migrating Bugzilla qa extension."
 
-# migrate_repo_branches "/bugzilla/qa" "/bugzilla/qa.git" "2.20 2.22 3.0 3.2 3.4 3.6 4.0 4.2 4.4 cvs"
+migrate_repo_branches "/bugzilla/qa" "/bugzilla/qa.git" "2.20 2.22 3.0 3.2 3.4 3.6 4.0 4.2 4.4 cvs"
 
 echo "Migrating BMO core."
 
-# migrate_repo_branches "/bmo" "/webtools/bmo/bugzilla.git" "3.0 3.2 3.4 3.6 4.0 4.0-dev 4.2 4.2-dev"
+migrate_repo_branches "/bmo" "/webtools/bmo/bugzilla.git" "3.0 3.2 3.4 3.6 4.0 4.0-dev 4.2 4.2-dev"
 
-# echo "Migrating BMO qa extension."
+echo "Migrating BMO qa extension."
 
-# migrate_repo_branches "/bmo/qa" "/webtools/bmo/qa.git" "3.6 4.0 4.2"
+migrate_repo_branches "/bmo/qa" "/webtools/bmo/qa.git" "3.6 4.0 4.2"
 
-# echo "Migrating extensions."
+echo "Migrating extensions."
 
-# TRUNK_EXTENSIONS="Browse browserid DescribeUser Developers ExtraValues GNOME PatchReport ProductInterests profanivore requestwhiner sitemap StockAnswers sync typesniffer vcs WeeklyBugSummary"
+TRUNK_EXTENSIONS="Browse browserid DescribeUser Developers ExtraValues GNOME PatchReport ProductInterests profanivore requestwhiner sitemap StockAnswers sync typesniffer vcs WeeklyBugSummary"
 
-# for e in $TRUNK_EXTENSIONS
-# do
-#   migrate_repo_single_branch "/bugzilla/extensions/$e" "/bugzilla/extensions/$e.git" "trunk" "master"
-# done
+for e in $TRUNK_EXTENSIONS
+do
+  migrate_repo_single_branch "/bugzilla/extensions/$e" "/bugzilla/extensions/$e.git" "trunk" "master"
+done
 
-# BRANCH_EXTENSIONS="cannedcomments rest trackingflags"
+BRANCH_EXTENSIONS="cannedcomments rest trackingflags"
 
-# for e in $BRANCH_EXTENSIONS
-# do
-#   migrate_repo_single_branch "/bugzilla/extensions" "/bugzilla/extensions/$e.git" $e "master"
-# done
+for e in $BRANCH_EXTENSIONS
+do
+  migrate_repo_single_branch "/bugzilla/extensions" "/bugzilla/extensions/$e.git" $e "master"
+done
 
-# migrate_repo_branches "/bugzilla/extensions/InlineHistory" "/bugzilla/extensions/InlineHistory.git" "1.0 1.1 1.2 1.3 1.4 1.5 trunk"
-# migrate_repo_branches "/bugzilla/extensions/securemail" "/bugzilla/extensions/securemail.git" "3.2 3.6 4.0"
-# migrate_repo_branches "/bugzilla/extensions/splinter" "/bugzilla/extensions/splinter.git" "4.0 4.2"
+migrate_repo_branches "/bugzilla/extensions/InlineHistory" "/bugzilla/extensions/InlineHistory.git" "1.0 1.1 1.2 1.3 1.4 1.5 trunk"
+migrate_repo_branches "/bugzilla/extensions/securemail" "/bugzilla/extensions/securemail.git" "3.2 3.6 4.0"
+migrate_repo_branches "/bugzilla/extensions/splinter" "/bugzilla/extensions/splinter.git" "4.0 4.2"
 migrate_repo_branches "/bugzilla/extensions/testopia" "/bugzilla/extensions/testopia.git" "1.0-bugzilla-2.20 1.2-bugzilla-2.22 2.1 2.2-bugzilla-3.2 trunk"
 
-# echo "Migrating misc."
+echo "Migrating misc."
 
-# MISC="active-installs bugzilla-bugbot build landfill tinderbox-bugbot tinderbox-client"
+MISC="active-installs bugzilla-bugbot build landfill tinderbox-bugbot tinderbox-client"
 
-# for m in $MISC
-# do
-#   migrate_repo_single_branch "/bugzilla/misc" "/bugzilla/misc/$m.git" $m "master"
-# done
+for m in $MISC
+do
+  migrate_repo_single_branch "/bugzilla/misc" "/bugzilla/misc/$m.git" $m "master"
+done
 
 END=`date +%s`
 

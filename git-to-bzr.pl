@@ -124,6 +124,17 @@ sub get_log_message {
     return substr(`git log --pretty="%B" -1 $rev`, 0, -1);
 }
 
+sub get_author {
+    my ($rev) = @_;
+    return substr(`git log --pretty="%an <%ae>" -1 $rev`, 0, -1);
+}
+
+sub get_commit_time {
+    # e.g. '2009-10-10 08:00:00 +0100'.
+    my ($rev) = @_;
+    return substr(`git log --pretty="%ai" -1 $rev`, 0, -1);
+}
+
 sub add_added_files {
     my ($bzr_checkout, @files) = @_;
     return if !@files;
@@ -154,6 +165,8 @@ sub sync_one_revision {
 
     chdir($git_checkout);
     my $log_message = get_log_message($next_git_rev);
+    my $author = get_author($next_git_rev);
+    my $commit_time = get_commit_time($next_git_rev);
 
     # Copy over the git data into the bzr checkout in preparation for commit.
     my @v_switch = $verbose ? ('-v') : ();
@@ -168,7 +181,8 @@ sub sync_one_revision {
         # There's no --dry-run option for bzr commit, so just show the status.
         do_command('bzr', 'status');
     } else {
-        do_command('bzr', 'commit', '-m', $log_message);
+        do_command('bzr', 'commit', '--author', $author, '--commit-time',
+                   $commit_time,'-m', $log_message);
     }
 }
 
