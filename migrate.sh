@@ -49,10 +49,10 @@ function migrate_branch
   fi
 
   cat ../$BRANCH.out | mono $TOOLSDIR/FastImportRewriter.exe | git fast-import --quiet
-  STUFF=$?
-  if [ "$STUFF" != "0" ]
+  EXITCODE=$?
+  if [ "$EXITCODE" != "0" ]
   then
-    echo "Weird return code from import! Code $STUFF."
+    echo "Weird return code from import! Code $EXITCODE."
   fi
 
   cd ..
