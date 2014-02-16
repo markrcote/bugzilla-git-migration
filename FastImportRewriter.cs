@@ -22,6 +22,12 @@ namespace migrate
 {
     class FastImportRewriter
     {
+        class Rename
+        {
+            public string OrigName { get; set; }
+            public string NewName { get; set; }
+        }
+
         static readonly Regex dataLengthRegex = new Regex("data ([0-9]+)?", RegexOptions.Compiled);
         static readonly Regex bugLengthRegex = new Regex("property bugs ([0-9]+)", RegexOptions.Compiled);
         static int blockSize = 1024;
@@ -81,11 +87,18 @@ namespace migrate
                         }
                         else if (s.StartsWith("R "))
                         {
+                            string origName = s.Substring(2, s.IndexOf(" ", 2) - 2);
+                            string newName = s.Substring(s.IndexOf(" ", 2) + 1);
                             // If directory, track the new name.
-                            if (IsDirectory(s.Substring(2, s.IndexOf(" ", 2) - 2)))
-                                dirs.Add(s.Substring(s.IndexOf(" ", 2) + 1));
+                            if (IsDirectory(origName))
+                                dirs.Add(newName);
                             else
-                                commitPart.Renames.Add(s);
+                            {
+                                Rename rename = new Rename();
+                                rename.OrigName = origName;
+                                rename.NewName = newName;
+                                commitPart.Renames.Add(rename);
+                            }
                         }
                         else if (s.StartsWith("D "))
                         {
@@ -203,7 +216,7 @@ namespace migrate
             public CommitPart()
             {
                 Deletes = new List<string>();
-                Renames = new List<string>();
+                Renames = new List<Rename>();
             }
 
             public string Reset { get; set; }
@@ -232,7 +245,7 @@ namespace migrate
                 private set;
             }
 
-            public List<string> Renames
+            public List<Rename> Renames
             {
                 get;
                 private set;
@@ -296,12 +309,23 @@ namespace migrate
                 if (From != null)
                     WriteLine(From);
 
-
                 if (Merge != null)
                     WriteLine(Merge);
 
-                foreach (string renamed in Renames)
-                    WriteLine(renamed);
+                foreach (Rename renamed in Renames)
+                {
+                    bool origDeleted = false;
+                    foreach (string deleted in Deletes)
+                    {
+                        if (deleted.Substring(2) == renamed.OrigName)
+                        {
+                            origDeleted = true;
+                            break;
+                        }
+                    }
+                    if (!origDeleted)
+                        WriteLine("R " + renamed.OrigName + " " + renamed.NewName);
+                }
 
                 foreach (string deleted in Deletes)
                     WriteLine(deleted);
