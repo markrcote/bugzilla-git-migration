@@ -17,7 +17,7 @@ use Getopt::Long;
 # Git repo; only read from.
 use constant GIT_REPO => 'git://git.mozilla.org/bugzilla/bugzilla.git';
 # This should be a full bzr repo that you can commit to.
-use constant BZR_REPO => 'https://bzr.mozilla.org/bugzilla/';
+use constant BZR_REPO => 'bzr+ssh://bzr.mozilla.org/bugzilla/';
 
 our (%switch, $verbose);
 
