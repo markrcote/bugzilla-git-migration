@@ -83,21 +83,20 @@ keeps a bzr repo in sync with a git repo.  It's unidirectional, from
 git to bzr.  It's designed to be run periodically, e.g. from cron.  It
 needs to be run once per branch like so:
 
-    ./git-to-bzr.pl --from <source branch> --to <dest branch>
+    ./git-to-bzr.pl --from-repo=<source repo> --from-branch=<source branch> --to-repo=<dest repo> --to-branch=<dest branch>
 
-<source branch> is the name of the git branch which will be mirrored,
-and <dest branch> is the end part of the destination bzr branch URL.
-These will normally be the same, except for the master branch, which
-translates to trunk on bzr.  The source and destination repos are
-hardcoded in the script, so given a source and destination branch of
-"4.2", the script would mirror from the git branch named "4.2" at
-git://git.mozilla.org/bugzilla/bugzilla.git to the bzr branch at
-https://bzr.mozilla.org/bugzilla/4.2/.
+<source repo> is the local path or URL of the git repo containing
+<source branch>, which is the name of the git branch which will be
+mirrored. <dest repo> is the path or URL up to but not including the branch
+name. <dest branch> is the end part of the destination bzr branch URL.
+The two branch names will normally be the same, except for the master branch,
+which translates to trunk on bzr.
 
 No bzr commit properties are created, since this concept doesn't exist
 in git.
 
 The -v option can be given to see some command output and other messages.
+Without it, only errors will be printed.
 
 Before this is first run, you must commit a .gitrev file to each
 destination bzr branch that contains the full ID of the last git

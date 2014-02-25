@@ -14,11 +14,6 @@ use File::Temp qw(tempdir);
 use File::Spec;
 use Getopt::Long;
 
-# Git repo; only read from.
-use constant GIT_REPO => 'https://git.mozilla.org/bugzilla/bugzilla.git';
-# This should be a full bzr repo that you can commit to.
-use constant BZR_REPO => 'bzr+ssh://bzr.mozilla.org/bugzilla/';
-
 our (%switch, $verbose);
 
 sub do_command {
@@ -67,17 +62,17 @@ sub git_revisions_since {
 }
 
 sub git_branch_revno {
-    my ($branch) = @_;
-    my $command = 'git ls-remote ' . GIT_REPO . " $branch";
+    my ($repo, $branch) = @_;
+    my $command = "git ls-remote $repo $branch";
     $verbose && print $command . "\n";
     return (split /\s/, `$command`)[0];
 }
 
 sub checkout_bzr {
     # Checkout HEAD from the given branch.
-    my ($branch) = @_;
+    my ($repo, $branch) = @_;
     my $to_dir = tempdir(CLEANUP => 1);
-    my $branch_path = BZR_REPO . $branch;
+    my $branch_path = $repo . $branch;
     do_command('bzr', 'checkout', '-q', $branch_path, $to_dir) && exit $?;
     return $to_dir;
 }
@@ -89,18 +84,20 @@ sub checkout_git {
 }
 
 sub clone_git {
+    my ($repo) = @_;
     my $to_dir = tempdir(CLEANUP => 1);
-    do_command('git', 'clone', '-q', GIT_REPO, $to_dir) && exit $?;
+    do_command('git', 'clone', '-q', $repo, $to_dir) && exit $?;
     return $to_dir;
 }
 
 sub remove_removed_files {
     my @items = @_;
+    my @q_switch = $verbose ? () : ('-q');
     foreach my $item (@items) {
         # We retain .bzrignore files in bzr even if we deleted them in git.
         # Also, we don't delete the .gitrev file, of course.
         if ($item !~ /\.bzrignore/ and $item !~ /\.gitrev/) {
-            do_command('bzr', 'rm', $item);
+            do_command('bzr', 'rm', @q_switch, $item);
         }
     }
 }
@@ -139,7 +136,9 @@ sub add_added_files {
     my ($bzr_checkout, @files) = @_;
     return if !@files;
 
-    do_command('bzr', 'add', @files);
+    my @q_switch = $verbose ? () : ('-q');
+
+    do_command('bzr', 'add', @q_switch, @files);
 }
 
 sub sync_one_revision {
@@ -177,32 +176,42 @@ sub sync_one_revision {
     remove_removed_files(@$removed);
     add_added_files($bzr_checkout, @$added);
     update_last_rev($bzr_checkout, $next_git_rev);
+
+    my @q_switch = $verbose ? () : ('-q');
+
     if ($switch{'dry-run'}) {
         # There's no --dry-run option for bzr commit, so just show the status.
-        do_command('bzr', 'status');
+        do_command('bzr', 'status', @q_switch);
     } else {
         do_command('bzr', 'commit', '--author', $author, '--commit-time',
-                   $commit_time,'-m', $log_message);
+                   $commit_time,'-m', $log_message, @q_switch);
     }
 }
 
+# from-repo is the source git repo.
+# from-branch is the source branch in the git repo.
+# to-repo is the destination Bazaar repo path up to but not including the
+#   branch name.
+# to-branch is the destination Bazaar branch, which is appended to to-repo.
 
-GetOptions(\%switch, 'from=s', 'to=s', 'dry-run|n', 'verbose|v') || die $@;
-($switch{from} && $switch{to}) or die "--from and --to must be specified.\n";
-my ($from, $to) = @switch{qw(from to)};
+GetOptions(\%switch, 'from-repo=s', 'from-branch=s', 'to-repo=s', 'to-branch=s', 'dry-run|n', 'verbose|v') || die $@;
+($switch{'from-repo'} && $switch{'from-branch'} && $switch{'to-repo'} && $switch{'to-branch'}) or die "--from-repo, --from-branch, --to-repo, and --to-branch must be specified.\n";
+my ($from_repo, $from_branch, $to_repo, $to_branch) = @switch{qw(from-repo from-branch to-repo to-branch)};
 $verbose = $switch{'verbose'};
+
+$to_repo =~ s!/*$!/!;  # add trailing slash
 
 my $orig_wd = cwd();
 
-my $bzr_checkout = checkout_bzr($to);
+my $bzr_checkout = checkout_bzr($to_repo, $to_branch);
 my $last_git_rev = get_last_rev($bzr_checkout);
-my $latest_git_rev = git_branch_revno($from);
+my $latest_git_rev = git_branch_revno($from_repo, $from_branch);
 if ($last_git_rev eq $latest_git_rev) {
     $verbose && print "Everything is up to date!\n";
     exit;
 }
 
-my $git_checkout = clone_git();
+my $git_checkout = clone_git($from_repo);
 $verbose && print "last git rev in bzr is $last_git_rev and latest " .
     "from git is $latest_git_rev\n";
 my @new_git_revs = git_revisions_since($git_checkout, $last_git_rev);
@@ -214,6 +223,6 @@ while (@new_git_revs) {
     sync_one_revision($git_checkout, $bzr_checkout, $next_git_rev);
 }
 
-checkout_git($git_checkout, $from);
+checkout_git($git_checkout, $from_branch);
 
 chdir($orig_wd);
