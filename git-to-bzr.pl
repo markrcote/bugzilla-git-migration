@@ -29,11 +29,9 @@ sub open_last_rev_file {
 }
 
 sub get_last_rev {
-    my ($bzr_checkout) = @_;
-    my $rev_file = open_last_rev_file($bzr_checkout, '<');
-    my $rev = <$rev_file>;
+    my ($repo, $branch) = @_;
+    my $rev = `bzr cat $repo$branch/.gitrev`;
     chomp($rev);
-    close($rev_file);
     return $rev;
 }
 
@@ -203,18 +201,18 @@ $to_repo =~ s!/*$!/!;  # add trailing slash
 
 my $orig_wd = cwd();
 
-my $bzr_checkout = checkout_bzr($to_repo, $to_branch);
-my $last_git_rev = get_last_rev($bzr_checkout);
+my $last_git_rev = get_last_rev($to_repo, $to_branch);
 my $latest_git_rev = git_branch_revno($from_repo, $from_branch);
+$verbose && print "last git rev in bzr is $last_git_rev and latest " .
+    "from git is $latest_git_rev\n";
 if ($last_git_rev eq $latest_git_rev) {
     $verbose && print "Everything is up to date!\n";
     exit;
 }
 
+my $bzr_checkout = checkout_bzr($to_repo, $to_branch);
 my $git_checkout = clone_git($from_repo);
 checkout_git($git_checkout, $from_branch);
-$verbose && print "last git rev in bzr is $last_git_rev and latest " .
-    "from git is $latest_git_rev\n";
 my @new_git_revs = git_revisions_since($git_checkout, $last_git_rev);
 
 $verbose && print 'new git revs: ' . join(', ', @new_git_revs) . "\n";
