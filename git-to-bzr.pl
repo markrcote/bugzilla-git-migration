@@ -212,6 +212,7 @@ if ($last_git_rev eq $latest_git_rev) {
 }
 
 my $git_checkout = clone_git($from_repo);
+checkout_git($git_checkout, $from_branch);
 $verbose && print "last git rev in bzr is $last_git_rev and latest " .
     "from git is $latest_git_rev\n";
 my @new_git_revs = git_revisions_since($git_checkout, $last_git_rev);
