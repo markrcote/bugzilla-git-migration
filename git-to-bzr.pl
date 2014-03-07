@@ -31,6 +31,7 @@ sub open_last_rev_file {
 sub get_last_rev {
     my ($repo, $branch) = @_;
     my $rev = `bzr cat $repo$branch/.gitrev`;
+    return '' if $? != 0;
     chomp($rev);
     return $rev;
 }
@@ -203,6 +204,7 @@ my $orig_wd = cwd();
 
 my $last_git_rev = get_last_rev($to_repo, $to_branch);
 my $latest_git_rev = git_branch_revno($from_repo, $from_branch);
+
 $verbose && print "last git rev in bzr is $last_git_rev and latest " .
     "from git is $latest_git_rev\n";
 if ($last_git_rev eq $latest_git_rev) {
@@ -211,6 +213,22 @@ if ($last_git_rev eq $latest_git_rev) {
 }
 
 my $bzr_checkout = checkout_bzr($to_repo, $to_branch);
+if (!$last_git_rev) {
+    $verbose && print "No .gitrev found. Creating it with ID of latest git revision\n($latest_git_rev).\n";
+    chdir($bzr_checkout);
+    update_last_rev($bzr_checkout, $latest_git_rev);
+    add_added_files($bzr_checkout, ('.gitrev'));
+    my @q_switch = $verbose ? () : ('-q');
+
+    if ($switch{'dry-run'}) {
+        # There's no --dry-run option for bzr commit, so just show the status.
+        do_command('bzr', 'status', @q_switch);
+    } else {
+        do_command('bzr', 'commit', '-m', 'Added .gitrev.', @q_switch);
+    }
+    exit;
+}
+
 my $git_checkout = clone_git($from_repo);
 checkout_git($git_checkout, $from_branch);
 my @new_git_revs = git_revisions_since($git_checkout, $last_git_rev);

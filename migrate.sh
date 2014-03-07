@@ -74,14 +74,6 @@ function migrate_branch
   diff bzr-md5s.txt git-md5s.txt
   echo "End of diffs."
 
-  if [ "$DEBUG" == "0" ]
-  then
-    cd git
-    git fetch git.m.o
-    git push git.m.o $DEST_BRANCH
-    cd ..
-  fi
-
   echo "Cleaning up."
   mv git/.git .
   rm -rf git
@@ -105,6 +97,24 @@ function setup
   cd ..
 }
 
+function repack
+{
+  cd git
+  git repack -a -d --depth=250 --window=250 -f
+  cd ..
+}
+
+function push
+{
+  if [ "$DEBUG" == "0" ]
+  then
+    cd git
+    git fetch git.m.o
+    git push --all git.m.o
+    cd ..
+  fi
+}
+
 function migrate_repo_branches
 {
   SRC_REPO_PATH=$1
@@ -117,6 +127,9 @@ function migrate_repo_branches
   do
     migrate_branch $SRC_REPO_PREFIX$SRC_REPO_PATH $b
   done
+
+  repack
+  push
 }
 
 function migrate_repo_single_branch
@@ -129,6 +142,9 @@ function migrate_repo_single_branch
   setup $DEST_REPO_PATH
 
   migrate_branch $SRC_REPO_PREFIX$SRC_REPO_PATH $SRC_BRANCH $DEST_BRANCH
+
+  repack
+  push
 }
 
 echo "Starting migration."
