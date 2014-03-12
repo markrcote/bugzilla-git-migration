@@ -163,6 +163,7 @@ sub sync_one_revision {
 
     chdir($git_checkout);
     my $log_message = get_log_message($next_git_rev);
+    my ($bug_id) = $log_message =~ /^[bB]ug (\d+)/;
     my $author = get_author($next_git_rev);
     my $commit_time = get_commit_time($next_git_rev);
 
@@ -177,13 +178,14 @@ sub sync_one_revision {
     update_last_rev($bzr_checkout, $next_git_rev);
 
     my @q_switch = $verbose ? () : ('-q');
+    my @fixes_option = $bug_id ? ('--fixes', "mozilla:$bug_id") : ();
 
     if ($switch{'dry-run'}) {
         # There's no --dry-run option for bzr commit, so just show the status.
         do_command('bzr', 'status', @q_switch);
     } else {
         do_command('bzr', 'commit', '--author', $author, '--commit-time',
-                   $commit_time,'-m', $log_message, @q_switch);
+                   $commit_time,'-m', $log_message, @q_switch, @fixes_option);
     }
 }
 
