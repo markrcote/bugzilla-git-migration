@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 #
 # You are advised to run this script on a temporary copy of your tree.
+# It defaults to migrating to the "master" branch - pass the name of another
+# branch to migrate to that instead.
 
 use FindBin qw($Bin);
 
@@ -14,8 +16,10 @@ if (!-f $Bin . "/FastImportRewriter.exe") {
     exit(1);
 }
 
+my $branch = $ARGV[0] || "master";
+
 system("git init");
-system("bzr fast-export --git-branch=master --no-plain | mono $Bin/FastImportRewriter.exe | git fast-import");
+system("bzr fast-export --git-branch=$branch --no-plain | mono $Bin/FastImportRewriter.exe | git fast-import");
 unlink(".bzr");
 system("git reset --hard");
 
